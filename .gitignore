@@ -4,3 +4,5 @@ test/shots/
 .DS_Store
 Thumbs.db
 *.log
+# files the Claude desktop app saves from chat into this folder
+Claude outputs/

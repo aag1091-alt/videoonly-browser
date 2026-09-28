@@ -829,6 +829,7 @@ if (!app.requestSingleInstanceLock()) {
 } else {
   app.on('second-instance', (_e, argv) => {
     const u = urlFromArgs(argv);
+    if (!win && app.isReady()) createWindow(); // macOS: app still running with its window closed
     if (win) {
       if (win.isMinimized()) win.restore();
       win.focus();

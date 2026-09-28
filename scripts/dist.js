@@ -12,6 +12,20 @@
 //     needs System Settings → Privacy & Security → "Open Anyway".
 
 const { execSync } = require('child_process');
+
+// CI passes secrets that don't exist as empty strings. electron-builder treats an empty
+// CSC_LINK as "a certificate was given" and fails trying to import it, so drop any empty
+// signing/notarization variables before building.
+const SIGNING_ENV = [
+  'CSC_LINK', 'CSC_KEY_PASSWORD', 'CSC_NAME', 'CSC_KEYCHAIN',
+  'CSC_INSTALLER_LINK', 'CSC_INSTALLER_KEY_PASSWORD', 'WIN_CSC_LINK', 'WIN_CSC_KEY_PASSWORD',
+  'APPLE_ID', 'APPLE_APP_SPECIFIC_PASSWORD', 'APPLE_TEAM_ID',
+  'APPLE_API_KEY', 'APPLE_API_KEY_ID', 'APPLE_API_ISSUER', 'APPLE_KEYCHAIN', 'APPLE_KEYCHAIN_PROFILE',
+];
+for (const name of SIGNING_ENV) {
+  if (process.env[name] !== undefined && process.env[name].trim() === '') delete process.env[name];
+}
+
 const builder = require('electron-builder');
 
 const flag = process.argv.slice(2).find((a) => ['--win', '--mac', '--linux'].includes(a));
@@ -39,7 +53,8 @@ if (platform === 'mac') {
     console.log(`macOS: signing with your Developer ID certificate${notarize ? ' and notarizing' : ' (notarization credentials not set, skipping notarization)'}`);
   } else {
     console.log('macOS: no Developer ID certificate found, using an ad-hoc signature');
-    config.mac = { identity: '-', hardenedRuntime: false };
+    // notarize: false, because Apple only notarizes Developer ID-signed apps
+    config.mac = { identity: '-', hardenedRuntime: false, notarize: false };
   }
 }
 

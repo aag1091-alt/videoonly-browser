@@ -13,8 +13,7 @@
     "dist": "node scripts/dist.js",
     "dist:win": "node scripts/dist.js --win",
     "dist:mac": "node scripts/dist.js --mac",
-    "dist:linux": "node scripts/dist.js --linux",
-    "test:e2e": "node test/e2e.js"
+    "dist:linux": "node scripts/dist.js --linux"
   },
   "dependencies": {
     "@ghostery/adblocker-electron": "^2.18.2"
