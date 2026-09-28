@@ -1,0 +1,107 @@
+name: Build and release
+
+# Every push to main builds the Windows, macOS and Linux installers and publishes them to
+# the GitHub release for the version in package.json (v1.0.0, ...). Bump the version to cut
+# a new release; pushing again without a bump refreshes that version's files.
+
+on:
+  push:
+    branches: [main]
+    paths-ignore: ['**.md']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            platform: --win
+          - name: macOS
+            os: macos-latest
+            platform: --mac
+          - name: Linux
+            os: ubuntu-latest
+            platform: --linux
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build installers
+        run: node scripts/dist.js ${{ matrix.platform }}
+        env:
+          # macOS signing + notarization. Used only by the macOS job, and only when these
+          # repository secrets exist; without them the Mac app is ad-hoc signed.
+          CSC_LINK: ${{ runner.os == 'macOS' && secrets.CSC_LINK || '' }}
+          CSC_KEY_PASSWORD: ${{ runner.os == 'macOS' && secrets.CSC_KEY_PASSWORD || '' }}
+          APPLE_ID: ${{ runner.os == 'macOS' && secrets.APPLE_ID || '' }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ runner.os == 'macOS' && secrets.APPLE_APP_SPECIFIC_PASSWORD || '' }}
+          APPLE_TEAM_ID: ${{ runner.os == 'macOS' && secrets.APPLE_TEAM_ID || '' }}
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installers-${{ matrix.name }}
+          if-no-files-found: error
+          path: |
+            dist/VideoOnly-Browser-*.exe
+            dist/VideoOnly-Browser-*.dmg
+            dist/VideoOnly-Browser-*.AppImage
+
+  release:
+    name: Publish release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: installers-*
+          merge-multiple: true
+
+      - name: Create or update the release for this version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          TAG="v$VERSION"
+          ls -la artifacts
+          cat > notes.md <<'NOTES'
+          A minimal desktop browser for watching video: popups, redirects to other sites,
+          downloads, dialogs and ads are blocked, and once a video plays everything except
+          the player is hidden.
+
+          **Windows**: `VideoOnly-Browser-Setup-<version>.exe` installs for your user and adds
+          desktop and Start menu shortcuts. SmartScreen may warn about the unsigned installer:
+          choose More info, then Run anyway.
+
+          **macOS**: `...-mac-arm64.dmg` for Apple Silicon, `...-mac-x64.dmg` for Intel. Drag the
+          app to Applications. If the build wasn't notarized, open it the first time via
+          System Settings > Privacy & Security > Open Anyway.
+
+          **Linux**: `...-linux-x86_64.AppImage`. Run `chmod +x` on it, then start it.
+          NOTES
+          if ! gh release view "$TAG" > /dev/null 2>&1; then
+            gh release create "$TAG" --title "VideoOnly Browser $VERSION" \
+              --notes-file notes.md --target "$GITHUB_SHA"
+          fi
+          gh release upload "$TAG" artifacts/* --clobber
