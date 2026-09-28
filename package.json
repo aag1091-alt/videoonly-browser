@@ -1,0 +1,98 @@
+{
+  "name": "videoonly-browser",
+  "productName": "VideoOnly Browser",
+  "version": "1.0.0",
+  "description": "A minimal desktop browser for watching video: blocks popups, redirects, downloads and ads, and shows only the player.",
+  "main": "main.js",
+  "desktopName": "videoonly-browser.desktop",
+  "author": "Avinash Gosavi",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "node scripts/dist.js",
+    "dist:win": "node scripts/dist.js --win",
+    "dist:mac": "node scripts/dist.js --mac",
+    "dist:linux": "node scripts/dist.js --linux",
+    "test:e2e": "node test/e2e.js"
+  },
+  "dependencies": {
+    "@ghostery/adblocker-electron": "^2.18.2"
+  },
+  "devDependencies": {
+    "electron": "^44.0.0",
+    "electron-builder": "^26.15.3"
+  },
+  "build": {
+    "appId": "com.aag1091.videoonly",
+    "productName": "VideoOnly Browser",
+    "copyright": "Copyright © 2026 Avinash Gosavi",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "main.js",
+      "content-preload.js",
+      "lib/**",
+      "ui/**",
+      "package.json"
+    ],
+    "publish": null,
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "artifactName": "VideoOnly-Browser-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "VideoOnly Browser",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false,
+      "artifactName": "VideoOnly-Browser-Setup-${version}.${ext}"
+    },
+    "mac": {
+      "category": "public.app-category.video",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "artifactName": "VideoOnly-Browser-${version}-mac-${arch}.${ext}"
+    },
+    "dmg": {
+      "title": "VideoOnly Browser ${version}",
+      "artifactName": "VideoOnly-Browser-${version}-mac-${arch}.${ext}"
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "category": "Video",
+      "artifactName": "VideoOnly-Browser-${version}-linux-${arch}.${ext}",
+      "syncDesktopName": true
+    }
+  }
+}

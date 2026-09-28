@@ -1,0 +1,14 @@
+<!doctype html><html><head><meta charset="utf-8"><title>dialogs</title></head><body>
+<iframe id="f" src="__EXT__/dialogs-inner.html" width="400" height="200"></iframe>
+<script>
+  const r = {};
+  r.confirm = confirm('please install something'); // must return false immediately
+  r.alert = alert('nag');
+  r.prompt = prompt('enter');
+  r.writable = Object.getOwnPropertyDescriptor(window, 'confirm').writable;
+  try { delete window.confirm; } catch (e) {}
+  try { window.confirm = () => true; } catch (e) {}
+  r.afterTamper = confirm('again');
+  window.__r = r;
+</script>
+</body></html>

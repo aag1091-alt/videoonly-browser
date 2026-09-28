@@ -1,0 +1,47 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Hostile stream page (test)</title>
+<style>
+  body { margin:0; font-family: sans-serif; background:#f4f4f4; }
+  header { background:#c0392b; color:#fff; padding:14px; font-size:20px; }
+  .wrap { display:flex; gap:16px; padding:16px; }
+  aside { width:220px; background:#ffe082; padding:12px; }
+  main { flex:1; }
+  #player { position:relative; width:480px; height:270px; background:#000; }
+  #player video { width:100%; height:100%; }
+  #player .controls { position:absolute; left:0; right:0; bottom:0; height:30px; background:rgba(255,0,0,.6); color:#fff; }
+  #overlay { position:fixed; inset:0; background:rgba(255,0,255,.35); z-index:999999; display:flex; align-items:center; justify-content:center; font-size:40px; color:#fff; }
+  #cookie { position:fixed; bottom:0; left:0; right:0; background:#333; color:#fff; padding:20px; z-index:1000000; }
+  iframe { width:800px; height:450px; border:0; display:block; margin-top:16px; }
+</style></head>
+<body>
+<header>HOSTILE HEADER — should be hidden in video-only</header>
+<div class="wrap">
+  <aside>SIDEBAR AD</aside>
+  <main>
+    <h2>Main page video (480x270)</h2>
+    <div id="player">
+      <video id="v1" src="/test.mp4" autoplay muted loop playsinline></video>
+      <div class="controls">custom controls</div>
+    </div>
+    <h2>Embedded player (cross-origin iframe, 800x450)</h2>
+    <iframe id="embed" src="__EMBED__"></iframe>
+    <p><a id="ext" href="__EXT__/other.html">External link</a> <a id="same" href="/other.html">Same-site link</a></p>
+  </main>
+</div>
+<div id="overlay">OVERLAY AD</div>
+<div id="cookie">COOKIE BANNER</div>
+<script src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js" async></script>
+<script>
+  // popup on load + repeated popunders
+  window.open('__EXT__/popup.html', '_blank');
+  setTimeout(() => window.open('__EXT__/popup.html?2', '_blank', 'width=400,height=300'), 1000);
+  // injected overlay (late)
+  setTimeout(() => { const d = document.createElement('div'); d.id = 'late'; d.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:120px;background:lime;z-index:2147483647;font-size:30px'; d.textContent = 'LATE INJECTED OVERLAY'; document.body.appendChild(d); }, 2000);
+  // forced redirect to another site
+  setTimeout(() => { location.href = '__EXT__/other.html?redirected'; }, 3000);
+  // forced download
+  setTimeout(() => { const a = document.createElement('a'); a.href = '/file.bin'; a.download = 'installer.exe'; document.body.appendChild(a); a.click(); }, 3500);
+  // unload trap
+  window.addEventListener('beforeunload', (e) => { e.preventDefault(); e.returnValue = 'stay!'; });
+</script>
+</body></html>

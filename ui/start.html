@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>VideoOnly Browser</title>
+<style>
+  html, body { margin: 0; min-height: 100%; background: #0b0c10; color: #e8e9ec;
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 640px; margin: 0 auto; padding: 10vh 24px 40px; }
+  h1 { display: flex; align-items: center; gap: 12px; font-size: 26px; font-weight: 650; margin: 0 0 6px; letter-spacing: -.01em; }
+  h1 img { width: 40px; height: 40px; }
+  h1 .name span { color: #3d8bfd; }
+  p { color: #aeb3c2; margin: 0 0 22px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  td { padding: 8px 0; border-top: 1px solid #22252e; vertical-align: top; }
+  td:first-child { width: 210px; color: #e8e9ec; white-space: nowrap; }
+  kbd { display: inline-block; background: #1e2128; border: 1px solid #2b2f39; border-bottom-width: 2px; border-radius: 5px;
+    padding: 1px 7px; font: 12px ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace; color: #e8e9ec; }
+  td:last-child { color: #aeb3c2; }
+  .note { margin-top: 28px; font-size: 13px; color: #6f7484; }
+</style>
+</head>
+<body>
+<main>
+  <h1><img src="icon.png" alt=""><span class="name"><span>Video</span>Only Browser</span></h1>
+  <p>Type or paste a page address in the bar above. Popups, redirects to other sites and file
+     downloads are blocked automatically; when a video starts playing, everything except the
+     player is hidden.</p>
+  <table id="keys"></table>
+  <p class="note">Blocked items show up in the shield counter on the right; click it to open one on purpose.
+     The gear menu switches ad-blocking, redirect blocking, auto video-only and the video-only style
+     (player vs bare video). The arrow next to “Video only” has picture-in-picture and playback speed.</p>
+</main>
+<script>
+  const mac = /Mac/.test(navigator.platform);
+  const M = mac ? '⌘' : 'Ctrl';
+  const rows = [
+    [[M, 'L'], 'Focus the address bar'],
+    [[M, mac ? '⇧' : 'Shift', 'V'], 'Toggle video-only mode by hand'],
+    [['Esc'], 'Leave video-only mode (or stop loading)'],
+    [[M, mac ? '⇧' : 'Shift', 'P'], 'Picture-in-picture'],
+    [[M, '.', '/', ','], 'Faster / slower (' + M + ' + / resets to 1×)'],
+    [mac ? ['⌃', '⌘', 'F'] : ['F11'], 'Full-screen window (the player’s own full-screen button works too)'],
+    [mac ? ['⌘', '[', '/', ']'] : ['Alt', '←', '/', '→'], 'Back / forward'],
+    [[M, 'R'], 'Reload'],
+    [[M, '+', '/', '−', '/', '0'], 'Zoom'],
+    [[M, mac ? '⇧' : 'Shift', 'I'], 'Page developer tools'],
+  ];
+  const table = document.getElementById('keys');
+  for (const [keys, text] of rows) {
+    const tr = table.insertRow();
+    const k = tr.insertCell();
+    keys.forEach((key, i) => {
+      if (key === '/') { k.append(' / '); return; }
+      if (i > 0 && keys[i - 1] !== '/') k.append(' + ');
+      const kb = document.createElement('kbd');
+      kb.textContent = key;
+      k.append(kb);
+    });
+    tr.insertCell().textContent = text;
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Page failed to load</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0b0c10; color: #e8e9ec;
+    font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 560px; margin: 0 auto; padding: 16vh 24px; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  code { color: #ff8f88; word-break: break-all; }
+  p { color: #aeb3c2; }
+</style>
+</head>
+<body>
+<main>
+  <h1>This page didn't load</h1>
+  <p id="url"></p>
+  <p><code id="err"></code></p>
+  <p>Check the address, or press <b>Ctrl+R</b> to try again.</p>
+</main>
+<script>
+  const q = new URLSearchParams(location.search);
+  document.getElementById('url').textContent = q.get('url') || '';
+  document.getElementById('err').textContent = (q.get('desc') || 'Unknown error') + (q.get('code') ? ' (' + q.get('code') + ')' : '');
+</script>
+</body>
+</html>
